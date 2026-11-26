@@ -1,14 +1,34 @@
-# Ward
+<div align="center">
+  <img src="data/io.github.ward.Ward.svg" alt="Ward shield" width="112" height="112">
+  <h1>Ward</h1>
+  <p><strong>Your firewall, clearly understood.</strong></p>
+  <p>A native Linux firewall manager built with Rust, GTK4, and libadwaita.</p>
+  <p>🛡️ UFW &amp; firewalld · 🐧 Linux desktop · 🎨 Light &amp; dark</p>
+  <p><a href="#-what-is-ward">Overview</a> · <a href="#-build-and-run">Quick start</a> · <a href="#-build-distribution-packages">Build packages</a> · <a href="#-testing">Testing</a></p>
+</div>
 
-A native Rust / GTK4 / libadwaita firewall manager for Linux. Ward provides an unprivileged desktop interface, UFW integration through a narrowly scoped PolicyKit helper, and firewalld integration through its system D-Bus API.
+---
 
-**Development release, not yet ready for Flathub or production firewall administration.** The application has real backend operations, not simulated success. Use the explicit mock mode for interface development. Validate real firewall changes in a disposable VM with console access before deployment.
+## 🛡️ What is Ward?
 
-## Build and run
+Ward gives Linux desktop users a clear, native interface for understanding and managing their firewall. See the current status, review traffic policies, and add rules or port exceptions directly from the home page. Search existing rules, inspect recent logs, and review changes before applying them.
 
-Requires current stable Rust, GTK **4.12+**, libadwaita **1.5+**, GLib/GIO development libraries, pkg-config, and a C compiler. The bindings are GTK Rust 0.11, libadwaita Rust 0.9, and GLib/GIO Rust 0.22; Cargo.lock pins the resolved versions.
+Ward manages **UFW or firewalld**; it does not replace either firewall backend. The desktop application runs without administrator privileges. UFW operations use a narrowly scoped PolicyKit helper, while firewalld operations use its system D-Bus API. A desktop authentication agent handles administrator approval when required.
 
-On Ubuntu 24.04, install `build-essential pkg-config libgtk-4-dev libadwaita-1-dev libglib2.0-dev` and Rust. On Fedora, install `gcc pkgconf-pkg-config gtk4-devel libadwaita-devel glib2-devel` and Rust. Install UFW or firewalld separately; Ward never installs or switches firewall services.
+- **Understand your protection:** plain-language status and explanations of incoming and outgoing traffic.
+- **Allow what you need:** add a rule or open a port from the home page, with validation and a review step.
+- **Feel at home on GNOME:** adaptive layouts, native widgets, system appearance, and accessible animation preferences.
+- **Keep control:** explicit confirmations and backend feedback for firewall changes.
+
+> **Development release.** Ward has real firewall operations and is not yet ready for production firewall administration or Flathub. Test real changes in a disposable VM with console access. For interface development, use the explicit mock mode below.
+
+## 🚀 Build and run
+
+Requires Rust **1.92+**, GTK **4.12+**, libadwaita **1.5+**, GLib/GIO development libraries, pkg-config, and a C compiler. The bindings are GTK Rust 0.11, libadwaita Rust 0.9, and GLib/GIO Rust 0.22; Cargo.lock pins the resolved versions.
+
+Install the development dependencies for your distribution using the package-build instructions below. Confirm `rustc --version` and `cargo --version` are both **1.92 or newer**; use a current stable Rust toolchain if your distribution's packages are older.
+
+Run these commands from the repository root:
 
 ```sh
 cargo build --locked
@@ -25,7 +45,7 @@ The GUI refuses to run as root. The schema is optional at startup so a missing i
 
 UFW status requires administrator privileges on supported distributions. Install the helper and policy before refreshing UFW. firewalld uses its own existing PolicyKit policy; the desktop session must provide an authentication agent. Operations run on worker threads and leave GTK responsive while authorization is pending.
 
-## Native installation
+## 📦 Native installation
 
 ```sh
 cargo build --release --locked
@@ -42,7 +62,7 @@ sudo meson install -C build
 
 For a distribution package, `DESTDIR=/path/to/staging ./scripts/install.sh` stages the release binaries and integration files; packaging triggers must compile schemas/update desktop and icon caches. Both installation methods use `/usr/libexec/ward-helper`, which must match the PolicyKit executable annotation. Never mark the helper setuid. Installed binaries, policy, and parent directories must be root-owned and not writable by ordinary users. Neither installation method enables a firewall or changes its rules.
 
-## Implemented
+## ✨ Features
 
 - Four-page introduction, backend discovery and explicit selection, GSettings completion, and a revisit action.
 - A redesigned home page with a plain-language status card, prominent Add Rule and Allow Port actions, persistent compact-window creation buttons, and explanations of incoming/outgoing policy. Port exceptions use the same validated backend requests as other rules.
@@ -55,15 +75,131 @@ For a distribution package, `DESTDIR=/path/to/staging ./scripts/install.sh` stag
 
 The UI refinement review, design references, screenshots, and detailed verification are in [docs/ui-review.md](docs/ui-review.md).
 
-## Distribution packages
+## 🔨 Build distribution packages
 
-Native x86-64 package recipes are in `packaging/`. Release builds target Debian 13 (`.deb`), Fedora 45 (`.rpm`), and current Arch (`.pkg.tar.zst`). The Debian and Fedora binaries are built in their own distribution environments. Packages are unsigned local development builds.
+The recipes in `packaging/` build native packages for **Arch Linux (rolling)**, **Fedora 45**, and **Debian 13**. The current release artifacts are x86_64 builds. Build each package on its target distribution or in a matching isolated build environment; the binaries link to that distribution's GTK and system libraries.
 
-`python3 packaging/source-dist.py` creates a vendored source archive in `dist/`, its SHA-256 file, and an Arch `PKGBUILD` with the actual source checksum. Rust 1.92+ is required by the pinned dependencies; vendored source builds run Cargo offline. Build from the extracted source archive so vendored crates and generated third-party notices are present. Use `packaging/debian/build.sh` on Debian, `rpmbuild -ba packaging/fedora/ward.spec` with the source archive in RPM's SOURCES directory on Fedora, or `makepkg` beside the rendered PKGBUILD and source archive on Arch. Distribution GTK development packages and standard package build tools are also required.
+### Before you begin
 
-Every package installs the same scoped helper and PolicyKit policy. Backends are optional (`Suggests`/`optdepends`), and no package script starts services or edits firewall configuration. Debian install/remove scripts update desktop/GSettings/icon caches; Fedora and Arch use their standard package-manager file triggers/hooks. No package contains a precompiled system-wide GSettings cache.
+1. Open a terminal in the Ward repository root.
+2. Install the dependencies for your distribution below.
+3. Check `rustc --version` and `cargo --version`: both must be **1.92+**. Python **3.11+**, GTK **4.12+**, and libadwaita **1.5+** are also required.
+4. Run the build as your normal user. Only dependency installation and final package installation use `sudo`.
 
-## Architecture and security
+Each workflow first runs `python3 packaging/source-dist.py`. This downloads the locked Rust dependencies and creates `dist/ward-0.1.0.tar.gz`, a SHA-256 file, and a rendered Arch `PKGBUILD`. The archive includes vendored crates and generated third-party license notices, so subsequent Cargo compilation runs offline. The first source-generation step needs network access.
+
+The commands below use version **0.1.0**. Adjust filenames when building a later release. Regenerate the source archive after making source changes.
+
+### Arch Linux
+
+**1. Install build dependencies.** Keep Arch fully updated when installing them:
+
+```sh
+sudo pacman -Syu --needed base-devel rust python pkgconf gtk4 libadwaita desktop-file-utils hicolor-icon-theme
+```
+
+**2. Generate the source archive and build the package:**
+
+```sh
+python3 packaging/source-dist.py
+(cd dist && makepkg --cleanbuild --clean)
+```
+
+`makepkg` verifies the source archive against the checksum in the generated `PKGBUILD`. Do not run it as root or use the unrendered `packaging/arch/PKGBUILD.in` directly.
+
+**3. Install the package:**
+
+```sh
+sudo pacman -U ./dist/ward-0.1.0-1-x86_64.pkg.tar.zst
+```
+
+### Fedora 45
+
+**1. Install build dependencies:**
+
+```sh
+sudo dnf install gcc rust cargo python3 pkgconf-pkg-config gtk4-devel libadwaita-devel glib2-devel rpm-build redhat-rpm-config desktop-file-utils add-determinism linkdupes
+```
+
+**2. Generate the source archive and prepare a local RPM build tree:**
+
+```sh
+python3 packaging/source-dist.py
+mkdir -p dist/rpmbuild/SOURCES dist/rpmbuild/SPECS
+cp dist/ward-0.1.0.tar.gz dist/rpmbuild/SOURCES/
+cp packaging/fedora/ward.spec dist/rpmbuild/SPECS/
+```
+
+**3. Build the binary and source RPMs:**
+
+```sh
+rpmbuild -ba --define "_topdir $PWD/dist/rpmbuild" dist/rpmbuild/SPECS/ward.spec
+```
+
+The binary package is written to `dist/rpmbuild/RPMS/x86_64/`; the source RPM is in `dist/rpmbuild/SRPMS/`. Fedora may also generate debug packages.
+
+**4. Install the package:**
+
+```sh
+sudo dnf install ./dist/rpmbuild/RPMS/x86_64/ward-0.1.0-1.fc45.x86_64.rpm
+```
+
+These local builds are unsigned. If your system requires signatures for local RPMs, this development package needs `dnf --nogpgcheck install` with the same file path.
+
+### Debian 13
+
+**1. Install build dependencies:**
+
+```sh
+sudo apt update
+sudo apt install build-essential cargo rustc python3 pkg-config libgtk-4-dev libadwaita-1-dev libglib2.0-dev libglib2.0-bin dpkg-dev desktop-file-utils hicolor-icon-theme
+```
+
+Check the Rust versions before continuing. If Debian's packaged toolchain is below **1.92**, use a current stable Rust toolchain and ensure its `cargo` and `rustc` are first on your `PATH`.
+
+**2. Generate and extract the vendored source archive:**
+
+```sh
+python3 packaging/source-dist.py
+mkdir -p dist/debian-source
+tar -xzf dist/ward-0.1.0.tar.gz -C dist/debian-source
+```
+
+**3. Build the package from the extracted source:**
+
+```sh
+WARD_OUTPUT_DIR="$PWD/dist" sh dist/debian-source/ward-0.1.0/packaging/debian/build.sh
+```
+
+The script compiles both binaries, determines native library dependencies, validates the desktop entry and schema, and creates `dist/ward_0.1.0-1_amd64.deb` on amd64.
+
+**4. Install the package:**
+
+```sh
+sudo apt install ./dist/ward_0.1.0-1_amd64.deb
+```
+
+### Launch and choose a backend
+
+After installation, open **Ward** from your application menu or run:
+
+```sh
+ward
+```
+
+Install your preferred backend separately if needed:
+
+| Distribution | firewalld | UFW |
+| --- | --- | --- |
+| Arch Linux | `sudo pacman -S firewalld` | `sudo pacman -S ufw` |
+| Fedora | `sudo dnf install firewalld` | `sudo dnf install ufw` |
+| Debian | `sudo apt install firewalld` | `sudo apt install ufw` |
+
+Use one firewall manager at a time. Ward's welcome experience discovers available backends and guides selection. firewalld must be running for its D-Bus API to be available; installing a backend and enabling its service are separate administrative decisions.
+
+Every Ward package installs the scoped helper and PolicyKit policy. Backends are optional, and Ward package scripts do not start services or edit firewall configuration. Debian scripts update desktop, GSettings, and icon caches; Fedora and Arch use their standard package-manager triggers or hooks. No package includes a precompiled system-wide GSettings cache.
+
+## 🔐 Architecture and security
 
 `src/model.rs` defines typed, bounded rule semantics and the serialized helper request enum. `src/backend/mod.rs` provides common discovery and request dispatch, while `ufw.rs` and `firewalld.rs` retain backend-specific operations. `src/bin/ward-helper.rs` handles only typed UFW operations. `src/main.rs` initializes the unprivileged application; `src/ui.rs` builds the dashboard and coordinates asynchronous operations, notifications, and error states. `src/ui/onboarding.rs`, `src/ui/rules.rs`, `src/ui/settings.rs`, and `src/ui/logs.rs` contain the corresponding native interfaces. `src/ui/home.rs` contains the home-page action layout and policy explanations. `build.rs` embeds the application icon as a GResource for reliable development and installed builds.
 
@@ -75,7 +211,7 @@ Ward blocks UFW mutations when firewalld owns its D-Bus name. firewalld mutation
 
 Every UI mutation requires review/confirmation. Backend confirmation precedes success feedback, and a failed operation invalidates the snapshot until refresh. A mutation may have succeeded even if its subsequent read failed. Remote-access warnings require a recovery path; **automatic SSH detection and timed rollback are not implemented**. Ward does not guarantee protection against lockouts. Existing rule text is preserved, never reconstructed into a supposedly equivalent editable rule.
 
-## Scope and remaining work
+## 🚧 Scope and remaining work
 
 This first implementation does **not** claim the entire publication-quality specification is finished:
 
@@ -88,7 +224,7 @@ This first implementation does **not** claim the entire publication-quality spec
 - Native packaging is implemented. **Flatpak distribution needs additional host integration**: an ordinary sandbox cannot execute the installed UFW helper through pkexec. A separately installed, audited host D-Bus service with sender-based PolicyKit checks is required for UFW. firewalld also needs a narrowly scoped system-bus talk permission. Do not grant unrestricted host access or distribute the current native helper inside a Flatpak and claim UFW works. No misleading Flatpak manifest is provided.
 - Native light/dark/high-contrast and 360-pixel layouts have graphical regression coverage. Screen-reader usability, translations, file-chooser/portal behavior across desktops, and real authorization still need manual release review. No custom CSS overrides GNOME styling.
 
-## Testing
+## 🧪 Testing
 
 ```sh
 cargo fmt --check
