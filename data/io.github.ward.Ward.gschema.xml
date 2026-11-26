@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="io.github.ward.Ward" path="/io/github/ward/Ward/">
+    <key name="onboarding-complete" type="b"><default>false</default><summary>Introduction completed</summary></key>
+    <key name="backend" type="s"><choices><choice value="ufw"/><choice value="firewalld"/></choices><default>'ufw'</default><summary>Preferred firewall backend</summary></key>
+    <key name="theme" type="s"><choices><choice value="system"/><choice value="light"/><choice value="dark"/></choices><default>'system'</default><summary>Color scheme</summary></key>
+    <key name="animations" type="b"><default>true</default><summary>Enable native page transitions</summary></key>
+  </schema>
+</schemalist>

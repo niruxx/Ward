@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/io/github/ward/Ward/icons">
+    <file alias="scalable/apps/io.github.ward.Ward.svg">io.github.ward.Ward.svg</file>
+  </gresource>
+</gresources>

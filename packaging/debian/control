@@ -1,0 +1,17 @@
+Source: ward
+Section: net
+Priority: optional
+Maintainer: niruxxdaboi <perezkyle98@protonmail.com>
+Build-Depends: cargo (>= 1.92), rustc (>= 1.92), gcc, pkg-config, libgtk-4-dev (>= 4.12), libadwaita-1-dev (>= 1.5), dpkg-dev, desktop-file-utils
+Standards-Version: 4.7.0
+Rules-Requires-Root: no
+
+Package: ward
+Architecture: any
+Depends: ${shlibs:Depends}, libglib2.0-bin, pkexec, polkitd, desktop-file-utils, hicolor-icon-theme
+Suggests: firewalld | ufw
+Description: Native GTK firewall manager for UFW and firewalld
+ Manage firewall status, rules, and port exceptions using a native
+ GTK4/libadwaita interface. UFW operations use a scoped PolicyKit helper;
+ firewalld operations use its system D-Bus API.
+ Installing Ward does not install, enable, disable, or switch firewall backends.

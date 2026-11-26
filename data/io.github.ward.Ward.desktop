@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Ward
+GenericName=Firewall Manager
+Comment=Manage Linux firewall rules
+Exec=ward
+Icon=io.github.ward.Ward
+Terminal=false
+Categories=System;Security;GTK;
+Keywords=firewall;ufw;firewalld;network;security;
+StartupNotify=true
+DBusActivatable=false

@@ -1,0 +1,26 @@
+pkgname=ward
+pkgver=0.1.0
+pkgrel=1
+pkgdesc='Native GTK firewall manager for UFW and firewalld'
+arch=('x86_64')
+license=('GPL-3.0-or-later')
+depends=('glibc' 'gcc-libs' 'gtk4>=4.12' 'libadwaita>=1.5' 'glib2' 'polkit' 'desktop-file-utils' 'hicolor-icon-theme')
+makedepends=('cargo>=1.92' 'rust>=1.92' 'pkgconf' 'gcc')
+optdepends=('firewalld: zone and runtime firewall management' 'ufw: simple persistent firewall rules')
+options=('!debug')
+source=("ward-$pkgver.tar.gz")
+sha256sums=('@SOURCE_SHA256@')
+
+build() {
+    cd "$srcdir/ward-$pkgver"
+    export CARGO_TARGET_DIR="$srcdir/cargo-target"
+    cargo build --release --locked --offline
+}
+
+package() {
+    cd "$srcdir/ward-$pkgver"
+    packaging/stage.sh "$srcdir/cargo-target/release" "$pkgdir"
+    desktop-file-validate "$pkgdir/usr/share/applications/io.github.ward.Ward.desktop"
+    glib-compile-schemas --strict --dry-run "$pkgdir/usr/share/glib-2.0/schemas"
+    # Standard libalpm hooks refresh schemas, desktop entries and icons.
+}
